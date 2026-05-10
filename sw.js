@@ -1,49 +1,31 @@
-const CACHE = 'opositamap-v1';
-const FILES = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.png',
-  './icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap'
-];
+const CACHE = 'opositamap-v2';
+const STATIC = ['./manifest.json','./icon.png','./icon-512.png'];
 
-// Install: cache all files
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(cache => {
-      return cache.addAll(FILES.map(f => new Request(f, {cache: 'reload'}))).catch(() => {
-        // If fonts fail (offline), still install
-        return cache.addAll(['./','./index.html','./manifest.json']);
-      });
-    })
-  );
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(STATIC).catch(()=>{})));
   self.skipWaiting();
 });
-
-// Activate: delete old caches
 self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
   self.clients.claim();
 });
-
-// Fetch: serve from cache, fallback to network
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  // Never cache: index, Firebase, Google APIs
+  if(url.pathname.endsWith('index.html')||url.pathname==='/'||
+     url.hostname.includes('firebase')||url.hostname.includes('googleapis')||
+     url.hostname.includes('gstatic')){
+    e.respondWith(fetch(e.request).catch(()=>caches.match('./index.html')));
+    return;
+  }
+  // Cache first for static assets
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        // Cache successful responses
-        if (res && res.status === 200 && res.type !== 'opaque') {
-          const copy = res.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, copy));
-        }
+    caches.match(e.request).then(cached=>{
+      if(cached)return cached;
+      return fetch(e.request).then(res=>{
+        if(res&&res.status===200){const c=res.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}
         return res;
-      }).catch(() => caches.match('./index.html'));
+      });
     })
   );
 });

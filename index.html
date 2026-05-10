@@ -218,6 +218,9 @@ input[type=text]::placeholder{color:var(--text3)}
 .pop-in{animation:pop-in .3s cubic-bezier(.34,1.56,.64,1) forwards}
 @keyframes slideUp{0%{transform:translateY(24px);opacity:0}100%{transform:translateY(0);opacity:1}}
 </style>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div id="app">
@@ -437,58 +440,76 @@ function uid(){return 'n'+(++nc);}
 function xe(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function xe2(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 
-/* ═══════════ STORAGE ═══════════ */
-function save(){try{localStorage.setItem('opp_v6',JSON.stringify({topics,mapView}));}catch(e){}}
+/* ═══════════ FIREBASE CONFIG & STORAGE ═══════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBYjO2aCTdSaxs8WSrXsmcX0Efn1DAVuIM",
+  authDomain: "opositamap.firebaseapp.com",
+  projectId: "opositamap",
+  storageBucket: "opositamap.firebasestorage.app",
+  messagingSenderId: "729170110393",
+  appId: "1:729170110393:web:5d93eb4d57ff00ddc57868"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const DOC = db.collection('data').doc('shared');
+
+// Track if we're saving to avoid save loops
+let saving = false;
+let saveTimeout = null;
+
+function save(){
+  // Debounce: wait 800ms after last change before saving to Firebase
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(()=>{
+    saving = true;
+    // Always save to localStorage as backup
+    try{localStorage.setItem('opp_v6',JSON.stringify({topics,mapView}));}catch(e){}
+    // Save to Firebase
+    DOC.set({topics: JSON.stringify(topics), mapView})
+      .then(()=>{ saving = false; })
+      .catch(err=>{ saving = false; console.warn('Firebase save error:', err); });
+  }, 800);
+}
+
 function load(){
-  try{const d=localStorage.getItem('opp_v6');if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}}catch(e){}
-  // Always ensure both default topics exist (won't overwrite user progress)
-  if(!topics['luz']||!topics['rotacion'])loadDefault();
-  renderHome();
+  // Show loading state
+  document.getElementById('topics-list').innerHTML =
+    '<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:8px">⏳</div><p style="font-weight:700">Cargando tus temas…</p></div>';
+
+  // Try Firebase first
+  DOC.get()
+    .then(doc => {
+      if(doc.exists){
+        const data = doc.data();
+        try{
+          topics = JSON.parse(data.topics)||{};
+          mapView = data.mapView||'split';
+        }catch(e){ topics={}; }
+      }
+      // Fallback: if Firebase empty, try localStorage
+      if(!Object.keys(topics).length){
+        try{
+          const d=localStorage.getItem('opp_v6');
+          if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}
+        }catch(e){}
+      }
+      // If still empty, load defaults
+      if(!Object.keys(topics).length) loadDefault();
+      renderHome();
+    })
+    .catch(err => {
+      // Firebase failed (offline?) — use localStorage
+      console.warn('Firebase load error, using localStorage:', err);
+      try{
+        const d=localStorage.getItem('opp_v6');
+        if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}
+      }catch(e){}
+      if(!Object.keys(topics).length) loadDefault();
+      renderHome();
+    });
 }
 function loadDefault(){
-  // Tema: Movimiento de Rotación de una Partícula
-  topics['rotacion']={name:'Movimiento de Rotación de una Partícula',bestScore:0,progress:0,nodes:[
-    {id:'r1',label:'Movimiento de Rotación',children:[
-      {id:'r1a',label:'Def: cambio de orientación respecto a un eje',children:[]},
-      {id:'r1b',label:'Eje de rotación: puntos fijos o en línea recta',children:[]},
-      {id:'r1c',label:'Vs traslación: desplazamiento idéntico de todos los puntos',children:[]}
-    ]},
-    {id:'r2',label:'Cinemática y Dinámica',children:[
-      {id:'r2a',label:'Cinemática Circular',children:[
-        {id:'r2a1',label:'Posición: r=R·cos(ωt+φ)i+R·sen(ωt+φ)j',children:[]},
-        {id:'r2a2',label:'Velocidad lineal: v=dr/dt (módulo v=R·ω)',children:[]},
-        {id:'r2a3',label:'Aceleración centrípeta: a=R·ω²',children:[]}
-      ]},
-      {id:'r2b',label:'Magnitudes Angulares',children:[
-        {id:'r2b1',label:'Vel. angular (ω): rapidez de variación del ángulo',children:[]},
-        {id:'r2b2',label:'Acel. angular (α): variación de ω con el tiempo',children:[]},
-        {id:'r2b3',label:'Relación vectorial: v = ω x r',children:[]}
-      ]},
-      {id:'r2c',label:'Dinámica de Rotación',children:[
-        {id:'r2c1',label:'Fuerza centrípeta: responsable del movimiento circular',children:[]},
-        {id:'r2c2',label:'Componentes: tangencial (Ft) y normal (Fn)',children:[]},
-        {id:'r2c3',label:'Sis. no inerciales: fuerzas ficticias (centrífuga y Coriolis)',children:[]}
-      ]}
-    ]},
-    {id:'r3',label:'Momento Angular (Cinético)',children:[
-      {id:'r3a',label:'Definición: L = r x p = m(r x v)',children:[]},
-      {id:'r3b',label:'Dirección: perpendicular al plano del movimiento',children:[]},
-      {id:'r3c',label:'Variación: dL/dt = r x F (momento de la fuerza)',children:[]},
-      {id:'r3d',label:'Principio de Conservación',children:[
-        {id:'r3d1',label:'Condición: fuerza neta nula o fuerza central',children:[]},
-        {id:'r3d2',label:'L permanece constante en módulo, dirección y sentido',children:[]}
-      ]}
-    ]},
-    {id:'r4',label:'Aplicación al Movimiento de los Astros',children:[
-      {id:'r4a',label:'Fuerzas centrales: atracción gravitatoria (Sol-Tierra)',children:[]},
-      {id:'r4b',label:'Movimiento plano: r y v siempre en el mismo plano',children:[]},
-      {id:'r4c',label:'Ley de las Áreas (Kepler)',children:[
-        {id:'r4c1',label:'Vel. areolar constante: dA/dt = L/(2m)',children:[]},
-        {id:'r4c2',label:'Perihelio: mayor velocidad (r menor)',children:[]},
-        {id:'r4c3',label:'Afelio: menor velocidad (r mayor)',children:[]}
-      ]}
-    ]}
-  ]};
   // Tema: La Luz
   topics['luz']={name:'La Luz',bestScore:0,progress:0,nodes:[
     {id:'ln0',label:'Introducción',children:[]},
@@ -1193,7 +1214,6 @@ function finishResultAnim(container){
 
 function retryGame(){startGame(gMode);}
 
-// Register Service Worker for PWA
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
