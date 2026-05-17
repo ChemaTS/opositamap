@@ -6,9 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0F0A1E">
-<link rel="manifest" href="manifest.json">
-<meta name="apple-mobile-web-app-title" content="OpositaMap">
-<link rel="apple-touch-icon" href="icon.png">
 <title>OpositaMap</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -218,6 +215,9 @@ input[type=text]::placeholder{color:var(--text3)}
 .pop-in{animation:pop-in .3s cubic-bezier(.34,1.56,.64,1) forwards}
 @keyframes slideUp{0%{transform:translateY(24px);opacity:0}100%{transform:translateY(0);opacity:1}}
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-title" content="OpositaMap">
+<link rel="apple-touch-icon" href="icon.png">
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -278,10 +278,10 @@ input[type=text]::placeholder{color:var(--text3)}
     </div>
     <p style="font-size:10px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Modo de juego</p>
     <div class="mgrid">
-      <div class="mcrd" onclick="startGame(0)"><div class="mic">🔵</div><span class="badge bp" style="margin-bottom:5px">Nivel 1</span><p>Selección múltiple</p><span>Elige la respuesta</span></div>
-      <div class="mcrd" onclick="startGame(1)"><div class="mic">🟢</div><span class="badge bg_" style="margin-bottom:5px">Nivel 2</span><p>Relacionar</p><span>Empareja con su padre</span></div>
-      <div class="mcrd" onclick="startGame(2)"><div class="mic">🟠</div><span class="badge bo" style="margin-bottom:5px">Nivel 3</span><p>Colocar en mapa</p><span>Toca el hueco</span></div>
-      <div class="mcrd" onclick="startGame(3)"><div class="mic">🔴</div><span class="badge br" style="margin-bottom:5px">Nivel 4</span><p>Completar huecos</p><span>Escribe el concepto</span></div>
+      <div class="mcrd" onclick="startGame(0)"><div class="mic">🔵</div><span class="badge bp" style="margin-bottom:5px">Nivel 1</span><p>Selección múltiple</p><span>Elige la respuesta</span><div id="lv-bar-0" class="pbar" style="height:4px;margin-top:8px"><div class="pfill pp" id="lv-fill-0" style="width:0%"></div></div><p id="lv-rec-0" style="font-size:10px;font-weight:700;color:var(--text2);margin-top:3px">Récord: —</p></div>
+      <div class="mcrd" onclick="startGame(1)"><div class="mic">🟢</div><span class="badge bg_" style="margin-bottom:5px">Nivel 2</span><p>Relacionar</p><span>Empareja con su padre</span><div id="lv-bar-1" class="pbar" style="height:4px;margin-top:8px"><div class="pfill pp" id="lv-fill-1" style="width:0%"></div></div><p id="lv-rec-1" style="font-size:10px;font-weight:700;color:var(--text2);margin-top:3px">Récord: —</p></div>
+      <div class="mcrd" onclick="startGame(2)"><div class="mic">🟠</div><span class="badge bo" style="margin-bottom:5px">Nivel 3</span><p>Colocar en mapa</p><span>Toca el hueco</span><div id="lv-bar-2" class="pbar" style="height:4px;margin-top:8px"><div class="pfill pp" id="lv-fill-2" style="width:0%"></div></div><p id="lv-rec-2" style="font-size:10px;font-weight:700;color:var(--text2);margin-top:3px">Récord: —</p></div>
+      <div class="mcrd" onclick="startGame(3)"><div class="mic">🔴</div><span class="badge br" style="margin-bottom:5px">Nivel 4</span><p>Completar huecos</p><span>Escribe el concepto</span><div id="lv-bar-3" class="pbar" style="height:4px;margin-top:8px"><div class="pfill pp" id="lv-fill-3" style="width:0%"></div></div><p id="lv-rec-3" style="font-size:10px;font-weight:700;color:var(--text2);margin-top:3px">Récord: —</p></div>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn btn-ghost mb" onclick="editTopic()" style="flex:1">✏️ Editar</button>
@@ -440,109 +440,196 @@ function uid(){return 'n'+(++nc);}
 function xe(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function xe2(s){return(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 
-/* ═══════════ FIREBASE CONFIG & STORAGE ═══════════ */
-const firebaseConfig = {
-  apiKey: "AIzaSyBYjO2aCTdSaxs8WSrXsmcX0Efn1DAVuIM",
-  authDomain: "opositamap.firebaseapp.com",
-  projectId: "opositamap",
-  storageBucket: "opositamap.firebasestorage.app",
-  messagingSenderId: "729170110393",
-  appId: "1:729170110393:web:5d93eb4d57ff00ddc57868"
-};
-
+/* ═══════════ FIREBASE + STORAGE ═══════════ */
+const firebaseConfig={apiKey:"AIzaSyBYjO2aCTdSaxs8WSrXsmcX0Efn1DAVuIM",authDomain:"opositamap.firebaseapp.com",projectId:"opositamap",storageBucket:"opositamap.firebasestorage.app",messagingSenderId:"729170110393",appId:"1:729170110393:web:5d93eb4d57ff00ddc57868"};
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const DOC = db.collection('data').doc('shared');
-
-// Track if we're saving to avoid save loops
-let saving = false;
-let saveTimeout = null;
-
+const db=firebase.firestore();
+const DOC=db.collection('data').doc('shared');
+let saveTimeout=null;
 function save(){
-  // Debounce: wait 800ms after last change before saving to Firebase
   clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(()=>{
-    saving = true;
-    // Always save to localStorage as backup
+  saveTimeout=setTimeout(()=>{
     try{localStorage.setItem('opp_v6',JSON.stringify({topics,mapView}));}catch(e){}
-    // Save to Firebase
-    DOC.set({topics: JSON.stringify(topics), mapView})
-      .then(()=>{ saving = false; })
-      .catch(err=>{ saving = false; console.warn('Firebase save error:', err); });
-  }, 800);
+    DOC.set({topics:JSON.stringify(topics),mapView}).catch(err=>console.warn('Firebase save:',err));
+  },800);
 }
-
 function load(){
-  // Show loading state
-  document.getElementById('topics-list').innerHTML =
-    '<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:8px">⏳</div><p style="font-weight:700">Cargando tus temas…</p></div>';
-
-  // Try Firebase first
-  DOC.get()
-    .then(doc => {
-      if(doc.exists){
-        const data = doc.data();
-        try{
-          topics = JSON.parse(data.topics)||{};
-          mapView = data.mapView||'split';
-        }catch(e){ topics={}; }
-      }
-      // Fallback: if Firebase empty, try localStorage
-      if(!Object.keys(topics).length){
-        try{
-          const d=localStorage.getItem('opp_v6');
-          if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}
-        }catch(e){}
-      }
-      // If still empty, load defaults
-      if(!Object.keys(topics).length) loadDefault();
-      renderHome();
-    })
-    .catch(err => {
-      // Firebase failed (offline?) — use localStorage
-      console.warn('Firebase load error, using localStorage:', err);
-      try{
-        const d=localStorage.getItem('opp_v6');
-        if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}
-      }catch(e){}
-      if(!Object.keys(topics).length) loadDefault();
-      renderHome();
-    });
+  document.getElementById('topics-list').innerHTML='<div style="text-align:center;padding:2rem;color:var(--text2)"><div style="font-size:32px;margin-bottom:8px">⏳</div><p style="font-weight:700">Cargando…</p></div>';
+  DOC.get().then(doc=>{
+    if(doc.exists){try{const d=doc.data();topics=JSON.parse(d.topics)||{};mapView=d.mapView||'split';}catch(e){topics={};}}
+    if(!Object.keys(topics).length){try{const d=localStorage.getItem('opp_v6');if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}}catch(e){}}
+    if(!Object.keys(topics).length)loadDefault();
+    renderHome();
+  }).catch(()=>{
+    try{const d=localStorage.getItem('opp_v6');if(d){const p=JSON.parse(d);topics=p.topics||{};mapView=p.mapView||'split';}}catch(e){}
+    if(!Object.keys(topics).length)loadDefault();
+    renderHome();
+  });
 }
 function loadDefault(){
-  // Tema: La Luz
-  topics['luz']={name:'La Luz',bestScore:0,progress:0,nodes:[
-    {id:'ln0',label:'Introducción',children:[]},
-    {id:'ln1',label:'Naturaleza de la Luz',children:[
-      {id:'ln1a',label:'Composición',children:[]},{id:'ln1b',label:'Radiación Electromagnética',children:[]},
-      {id:'ln1c',label:'Medición de Ondas',children:[]},{id:'ln1d',label:'Velocidad de Propagación',children:[]},
-      {id:'ln1e',label:'Esencial para la vida (fotosíntesis)',children:[]},{id:'ln1f',label:'Fundamental en visión humana',children:[]}
+  topics['acustica']={name:'Acústica Básica',bestScore:0,progress:0,levelBest:{},nodes:[
+    {id:'ac1',label:'Introducción',children:[
+      {id:'ac1a',label:'Eje transversal',children:[]},
+      {id:'ac1b',label:'Excelencia en registro 2026',children:[]},
+      {id:'ac1c',label:'Cumplimiento de estándares en Andalucía',children:[]}
     ]},
-    {id:'ln2',label:'Teorías y Leyes de Propagación',children:[
-      {id:'ln2a',label:'Teorías Históricas',children:[
-        {id:'ln2a1',label:'Teoría Corpuscular (Newton)',children:[]},
-        {id:'ln2a2',label:'Teoría Ondulatoria (Huygens)',children:[]},
-        {id:'ln2a3',label:'Mecánica Ondulatoria (de Broglie)',children:[]}
+    {id:'ac2',label:'Naturaleza del sonido',children:[
+      {id:'ac2a',label:'Fenómeno vibratorio',children:[
+        {id:'ac2a1',label:'Perturbación mecánica',children:[]},
+        {id:'ac2a2',label:'Medio elástico',children:[]}
       ]},
-      {id:'ln2b',label:'Fenómenos Principales',children:[]},{id:'ln2c',label:'Principio RAT',children:[]},
-      {id:'ln2d',label:'Comportamiento en Superficies',children:[
-        {id:'ln2d1',label:'Transparentes',children:[]},{id:'ln2d2',label:'Translúcidos',children:[]},{id:'ln2d3',label:'Opacos',children:[]}
+      {id:'ac2b',label:'Variaciones sucesivas de presión',children:[
+        {id:'ac2b1',label:'Compresiones',children:[]},
+        {id:'ac2b2',label:'Rarefacciones',children:[]}
       ]},
-      {id:'ln2e',label:'Sombra y Penumbra',children:[]},{id:'ln2f',label:'Reflexión (3.1)',children:[]},
-      {id:'ln2g',label:'Refracción (3.2)',children:[]},{id:'ln2h',label:'Absorción (3.3)',children:[]},
-      {id:'ln2i',label:'Interferencia (3.4)',children:[]},{id:'ln2j',label:'Difracción (3.5)',children:[]},
-      {id:'ln2k',label:'Polarización (3.6)',children:[]}
+      {id:'ac2c',label:'Tipología de ondas',children:[
+        {id:'ac2c1',label:'Ondas transversales',children:[
+          {id:'ac2c1a',label:'Perpendiculares a la dirección',children:[]}
+        ]},
+        {id:'ac2c2',label:'Ondas longitudinales',children:[
+          {id:'ac2c2a',label:'Paralelas a la dirección',children:[]}
+        ]}
+      ]},
+      {id:'ac2d',label:'Propiedades físicas',children:[
+        {id:'ac2d1',label:'Frecuencia (f)',children:[{id:'ac2d1a',label:'Hertzios (f=1/T)',children:[]}]},
+        {id:'ac2d2',label:'Periodo (T)',children:[{id:'ac2d2a',label:'Tiempo (T=1/f)',children:[]}]},
+        {id:'ac2d3',label:'Longitud de onda (λ)',children:[{id:'ac2d3a',label:'Distancia (λ=c/f)',children:[]}]},
+        {id:'ac2d4',label:'Amplitud',children:[{id:'ac2d4a',label:'Máxima variación de presión',children:[]}]}
+      ]},
+      {id:'ac2e',label:'Velocidad de propagación',children:[
+        {id:'ac2e1',label:'340 m/s a 20°C',children:[]},
+        {id:'ac2e2',label:'0,6 m/s por cada °C',children:[]},
+        {id:'ac2e3',label:'v = λ·f = λ/T',children:[]}
+      ]}
     ]},
-    {id:'ln3',label:'Magnitudes y Unidades Fotométricas (4)',children:[
-      {id:'ln3a',label:'Fotometría (medición luz visible)',children:[]},{id:'ln3b',label:'Magnitudes',children:[]},
-      {id:'ln3c',label:'Fuentes de Energía Luminosa',children:[]},{id:'ln3d',label:'Calidad de Fuente de Luz',children:[]}
+    {id:'ac3',label:'Leyes de propagación',children:[
+      {id:'ac3a',label:'Reflexión',children:[
+        {id:'ac3a1',label:'θᵢ = θᵣ',children:[]},
+        {id:'ac3a2',label:'Superficies lisas',children:[{id:'ac3a2a',label:'Reflexión especular',children:[]}]},
+        {id:'ac3a3',label:'Superficies porosas',children:[{id:'ac3a3a',label:'Difusión',children:[]}]}
+      ]},
+      {id:'ac3b',label:'Refracción',children:[
+        {id:'ac3b1',label:'Cambio de medio o temperatura',children:[]},
+        {id:'ac3b2',label:'v1/sen θi = v2/sen θ',children:[]}
+      ]},
+      {id:'ac3c',label:'Difracción',children:[
+        {id:'ac3c1',label:'Rodear obstáculos',children:[]},
+        {id:'ac3c2',label:'Zona de sombra acústica',children:[]}
+      ]},
+      {id:'ac3d',label:'Principio de Huygens',children:[
+        {id:'ac3d1',label:'Nuevo frente de ondas',children:[]}
+      ]}
     ]},
-    {id:'ln4',label:'Principios y Características de Fuentes de Luz (5)',children:[
-      {id:'ln4a',label:'Dispositivos/fenómenos que emiten energía',children:[]},
-      {id:'ln4b',label:'Permiten iluminación y percepción visual',children:[]},
-      {id:'ln4c',label:'Características',children:[]},{id:'ln4d',label:'Elección depende del uso específico',children:[]}
+    {id:'ac4',label:'El fenómeno de la persistencia',children:[
+      {id:'ac4a',label:'Proceso psicoacústico',children:[]},
+      {id:'ac4b',label:'Eco',children:[{id:'ac4b1',label:'El cerebro las separa',children:[]}]},
+      {id:'ac4c',label:'Reverberación',children:[{id:'ac4c1',label:'El cerebro unifica',children:[]}]},
+      {id:'ac4d',label:'Nuevos umbrales',children:[
+        {id:'ac4d1',label:'Umbral palabra (70ms)',children:[]},
+        {id:'ac4d2',label:'Umbral música (100ms)',children:[]}
+      ]},
+      {id:'ac4e',label:'Diseño acústico',children:[
+        {id:'ac4e1',label:'Refuerzo vs Eco',children:[]},
+        {id:'ac4e2',label:'Efecto Haas',children:[
+          {id:'ac4e2a',label:'Localiza solo la primera reflexión',children:[]}
+        ]}
+      ]}
     ]},
-    {id:'ln5',label:'Conclusiones (6)',children:[]},{id:'ln6',label:'Bibliografía (7)',children:[]}
+    {id:'ac5',label:'Percepción auditiva',children:[
+      {id:'ac5a',label:'Impulsos electroquímicos',children:[
+        {id:'ac5a1',label:'Tres etapas',children:[
+          {id:'ac5a1a',label:'Recepción',children:[]},
+          {id:'ac5a1b',label:'Transmisión',children:[]},
+          {id:'ac5a1c',label:'Percepción',children:[]}
+        ]}
+      ]},
+      {id:'ac5b',label:'Anatomía funcional',children:[
+        {id:'ac5b1',label:'Oído Externo',children:[{id:'ac5b1a',label:'Resonancia 3kHz',children:[]}]},
+        {id:'ac5b2',label:'Oído Medio',children:[{id:'ac5b2a',label:'Adaptador de impedancias',children:[]}]},
+        {id:'ac5b3',label:'Oído Interno',children:[
+          {id:'ac5b3a',label:'Teoría de localización de Békésy',children:[]},
+          {id:'ac5b3b',label:'Órgano de Corti',children:[]}
+        ]}
+      ]},
+      {id:'ac5c',label:'Respuesta en frecuencia',children:[
+        {id:'ac5c1',label:'Sensibilidad no lineal',children:[{id:'ac5c1a',label:'Máxima en 3-4 kHz',children:[]}]}
+      ]},
+      {id:'ac5d',label:'Magnitudes fisiológicas',children:[
+        {id:'ac5d1',label:'Tono',children:[{id:'ac5d1a',label:'Mel/Bark',children:[]}]},
+        {id:'ac5d2',label:'Timbre',children:[{id:'ac5d2a',label:'Frecuencias armónicas',children:[]}]},
+        {id:'ac5d3',label:'Sonoridad (Loudness)',children:[{id:'ac5d3a',label:'Curvas isofónicas de Fletcher y Munson',children:[]}]},
+        {id:'ac5d4',label:'Fonio vs Sonio',children:[
+          {id:'ac5d4a',label:'Fonio (fon)',children:[{id:'ac5d4a1',label:'Nivel a 1kHz',children:[]}]},
+          {id:'ac5d4b',label:'Sonio (Son)',children:[{id:'ac5d4b1',label:'1 sonio = 40 fonios',children:[]}]}
+        ]}
+      ]}
+    ]},
+    {id:'ac6',label:'Magnitudes y Unidades',children:[
+      {id:'ac6a',label:'El decibelio (dB)',children:[
+        {id:'ac6a1',label:'Unidad logarítmica',children:[]},
+        {id:'ac6a2',label:'Ley de Weber-Fechner',children:[]}
+      ]},
+      {id:'ac6b',label:'Niveles acústicos',children:[
+        {id:'ac6b1',label:'dB SPL',children:[{id:'ac6b1a',label:'Presión, ref. 20μPa',children:[]}]},
+        {id:'ac6b2',label:'dB SIL',children:[{id:'ac6b2a',label:'Intensidad, ref. 10⁻¹² W/m²',children:[]}]},
+        {id:'ac6b3',label:'dB PWL',children:[{id:'ac6b3a',label:'Potencia, 10⁻¹² W',children:[]}]},
+        {id:'ac6b4',label:'+3 dB duplica potencia',children:[]},
+        {id:'ac6b5',label:'+6 dB duplica presión',children:[]},
+        {id:'ac6b6',label:'+10 dB duplica sensación de volumen',children:[]}
+      ]},
+      {id:'ac6c',label:'Audiometría moderna',children:[
+        {id:'ac6c1',label:'dB HL (Nivel de Audición)',children:[{id:'ac6c1a',label:'Evaluar la salud auditiva',children:[]}]}
+      ]},
+      {id:'ac6d',label:'Redes de Ponderación',children:[
+        {id:'ac6d1',label:'dB A',children:[
+          {id:'ac6d1a',label:'El más utilizado en normativas',children:[]},
+          {id:'ac6d1b',label:'Filtra las bajas frecuencias',children:[]}
+        ]},
+        {id:'ac6d2',label:'dB C',children:[{id:'ac6d2a',label:'Medir picos',children:[]}]}
+      ]}
+    ]},
+    {id:'ac7',label:'Sistemas de sonido',children:[
+      {id:'ac7a',label:'Cadena de Transducción',children:[{id:'ac7a1',label:'Conversión A/D junto a la fuente',children:[]}]},
+      {id:'ac7b',label:'Evolución del Registro',children:[{id:'ac7b1',label:'Captura rica en matices es universal',children:[]}]},
+      {id:'ac7c',label:'Niveles de referencia',children:[
+        {id:'ac7c1',label:'EBU D77',children:[
+          {id:'ac7c1a',label:'Alineación (AL) a -18 dBFS',children:[]},
+          {id:'ac7c1b',label:'Nivel Máximo Permitido (PML) a -9 dBFS',children:[]}
+        ]},
+        {id:'ac7c2',label:'EBU R 128',children:[
+          {id:'ac7c2a',label:'Loudness',children:[]},
+          {id:'ac7c2b',label:'LUFS',children:[]}
+        ]}
+      ]},
+      {id:'ac7d',label:'Profundidad Perceptiva',children:[
+        {id:'ac7d1',label:'Organización del flujo en objetos sonoros',children:[]},
+        {id:'ac7d2',label:'Gestalt',children:[{id:'ac7d2a',label:'Isomorfismo psicofísico',children:[]}]}
+      ]}
+    ]},
+    {id:'ac8',label:'Perturbaciones y precauciones',children:[
+      {id:'ac8a',label:'Relación Señal/Ruido (S/N)',children:[
+        {id:'ac8a1',label:'Ruido: mínimo 10 dB bajo señal',children:[]},
+        {id:'ac8a2',label:'THD: alteración de armónicos originales',children:[]}
+      ]},
+      {id:'ac8b',label:'Acoplamiento Acústico',children:[
+        {id:'ac8b1',label:'El Efecto Larsen',children:[
+          {id:'ac8b1a',label:'Micrófonos fuera de altavoces',children:[]},
+          {id:'ac8b1b',label:'Direccionalidad en los micrófonos',children:[]},
+          {id:'ac8b1c',label:'Controlar los retardos',children:[]}
+        ]}
+      ]}
+    ]},
+    {id:'ac9',label:'Marco normativo',children:[
+      {id:'ac9a',label:'Decreto 50/2025 de Andalucía',children:[
+        {id:'ac9a1',label:'Limitadores Espectrales (IT 6)',children:[]},
+        {id:'ac9a2',label:'Zonificación ASA',children:[]},
+        {id:'ac9a3',label:'Categorías de Aislamiento',children:[]},
+        {id:'ac9a4',label:'Se complementa con',children:[
+          {id:'ac9a4a',label:'Guía Acústica 50/2025',children:[]},
+          {id:'ac9a4b',label:'Ley del Ruido 37/2003',children:[]}
+        ]}
+      ]}
+    ]}
   ]};
 }
 
@@ -725,7 +812,19 @@ function openDetail(id){
   document.getElementById('d-name').textContent=t.name;
   document.getElementById('d-prog').style.width=pct+'%';
   document.getElementById('d-pct').textContent=pct+'%';
-  document.getElementById('d-stats').textContent=`${t.progress||0}/${all.length} conceptos · 🏆 Mejor: ${t.bestScore||0}pts`;
+  document.getElementById('d-stats').textContent=`${t.progress||0}/${all.length} conceptos · 🏆 Mejor global: ${t.bestScore||0}pts`;
+  // Per-level stats
+  const lb=t.levelBest||{};
+  const la=t.levelAcc||{};
+  const lvNames=['Selección','Relacionar','Colocar','Completar'];
+  [0,1,2,3].forEach(i=>{
+    const rec=lb[i]||0;
+    const acc=la[i]; // {score,total} or undefined
+    const fill=document.getElementById('lv-fill-'+i);
+    const recEl=document.getElementById('lv-rec-'+i);
+    if(fill)fill.style.width=(acc?Math.round(acc.score/acc.total*100):0)+'%';
+    if(recEl)recEl.textContent=rec?`🏆 ${rec}pts`:'Sin jugar aún';
+  });
   showScreen('s-detail');
 }
 function deleteTopic(){if(!confirm('¿Eliminar?'))return;delete topics[curId];save();toast('Eliminado');showHome();}
@@ -976,7 +1075,8 @@ function buildMatchQs(flat){
 }
 function showMatch(q){
   setQ('Empareja cada concepto con su epígrafe padre 👇');
-  revIds=new Set(['root']);renderGameMM();
+  // Keep revIds as-is — nodes revealed in previous rounds stay visible
+  renderGameMM();
   mSt={items:q.items,all:q.all,sel:null,matched:{},correct:0,total:q.items.length};
   const parents=[...new Set(q.items.map(n=>n.parentLabel||'(Raíz)'))];
   // Fill right column up to 4 with fakes, but right items are NEVER disabled
@@ -1150,6 +1250,11 @@ function endGame(){
   const pct=denom?Math.round(gScore/denom*100):100;
   topics[curId].progress=Math.max(t.progress||0,revIds.size-1);
   topics[curId].bestScore=Math.max(t.bestScore||0,total);
+  // Save per-level best score and last accuracy
+  if(!topics[curId].levelBest)topics[curId].levelBest={};
+  if(!topics[curId].levelAcc)topics[curId].levelAcc={};
+  topics[curId].levelBest[gMode]=Math.max(topics[curId].levelBest[gMode]||0,total);
+  topics[curId].levelAcc[gMode]={score:gScore,total:denom};
   save();
   if(pct>=80)sWin();
   document.getElementById('r-pts').textContent=total+'pts';
@@ -1214,9 +1319,7 @@ function finishResultAnim(container){
 
 function retryGame(){startGame(gMode);}
 
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 load();
 </script>
 </body>
